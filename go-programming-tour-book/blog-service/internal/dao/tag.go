@@ -20,7 +20,7 @@ func (d *Dao) CreateTag(name string, state uint8, createBy string) error {
 	tag := model.Tag{
 		Name:  name,
 		State: state,
-		Model: &model.Model{CreateBy: createBy},
+		Model: model.Model{CreateBy: createBy},
 	}
 	return tag.Create(d.engine)
 }
@@ -32,7 +32,7 @@ func (d *Dao) UpdateTag(id uint32, name string, state uint8, modifiedBy string) 
 		Model: &model.Model{ID: id, ModifiedBy: modifiedBy},
 	}*/
 	tag := model.Tag{
-		Model: &model.Model{
+		Model: model.Model{
 			ID: id,
 		},
 	}
@@ -48,6 +48,6 @@ func (d *Dao) UpdateTag(id uint32, name string, state uint8, modifiedBy string) 
 }
 
 func (d *Dao) DeleteTag(id uint32) error {
-	tag := model.Tag{Model: &model.Model{ID: id}}
+	tag := model.Tag{Model: model.Model{ID: id}}
 	return tag.Delete(d.engine)
 }

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/global"
 	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/pkg/errcode"
 	"github.com/jinzhu/gorm"
 )
@@ -10,9 +9,10 @@ type Article struct {
 	*Model
 	Title         string `json:"title"`
 	Desc          string `json:"desc"`
-	Content       string `json:"content"`
+	Content       string `json:"content" gorm:"type:longtext"`
 	CoverImageUrl string `json:"cover_image_url"`
 	State         uint8  `json:"state"`
+	Tags          []Tag  `json:"tags" gorm:"many2many:blog_tag_article"`
 }
 
 func (a Article) TableName() string {
@@ -23,7 +23,7 @@ func (a Article) Get(db *gorm.DB) (*Article, error) {
 	article := &Article{}
 	db = db.Where("is_del=?", 0)
 
-	if err := db.First(article, a.ID).Error; err != nil {
+	if err := db.Preload("Tags").First(article, a.ID).Error; err != nil {
 		return nil, err
 	}
 	return article, nil
@@ -38,7 +38,13 @@ func (a Article) Create(db *gorm.DB) error {
 		return err
 	}
 	if isExist == 0 {
-		return db.Create(&a).Error
+		//return db.Create(&a).Error
+		return db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&a).Error; err != nil {
+				return err
+			}
+			return nil
+		})
 	}
 	return errcode.ErrorCreateArticle
 }
@@ -54,7 +60,8 @@ func (a Article) Update(db *gorm.DB, values interface{}) error {
 
 //删除有问题
 func (a Article) Delete(db *gorm.DB) error {
-	global.Logger.Info(a.ID)
-	return db.Where("id=? AND is_del=?", a.ID, 0).Delete(&a).Error
+	//global.Logger.Info(a.ID)
+	return db.Select("Tags").Where("id=? AND is_del=?", a.ID, 0).Delete(&a).Error
 	//return db.Model(a).Delete(&a).Error
+
 }

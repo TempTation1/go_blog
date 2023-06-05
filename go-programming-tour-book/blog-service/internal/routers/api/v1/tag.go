@@ -16,7 +16,10 @@ func NewTag() Tag {
 }
 
 //对下是service，对上是response
-func (t Tag) Get(c *gin.Context) {}
+func (t Tag) Get(c *gin.Context) {
+
+}
+
 func (t Tag) List(c *gin.Context) {
 	param := service.TagListRequest{} //GET请求只有page和page_size获取，这些都根据配置筛选了，而需要校验的name和state没有输入
 	response := app.NewResponse(c)

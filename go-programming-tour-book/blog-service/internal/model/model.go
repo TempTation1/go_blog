@@ -34,8 +34,10 @@ func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
 	}
 
 	db.SingularTable(true) //表名转义struct时候不加s
+	//db.AutoMigrate()
 
 	//注册回调行为
+	db.AutoMigrate(&Article{}, &Tag{})
 	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
 	db.Callback().Delete().Replace("gorm:delete", delteCallback)

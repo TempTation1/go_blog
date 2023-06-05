@@ -1,19 +1,42 @@
 package dao
 
-import "github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/internal/model"
+import (
+	"fmt"
+
+	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/internal/model"
+	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/pkg/convert"
+)
 
 func (d *Dao) GetArticle(id uint32, state uint8) (*model.Article, error) {
 	article := model.Article{Model: &model.Model{ID: id}, State: state}
 	return article.Get(d.engine)
 }
 
-func (d *Dao) CreateArticle(title string, desc string, content string, create_by string, state uint8) error {
+func (d *Dao) CreateArticle(title string, desc string, content string, create_by string, state uint8, tagListStr []string) error {
+	var tagList []model.Tag
+	var tag model.Tag
+	for _, tagName := range tagListStr {
+		tagid := convert.SrcTo(tagName).MustInt()
+		//queryDB := d.engine.Where("is_del=?",0).Session()
+		//d.engine.Where("id=?", tagid).Find(&tag)
+		//这里选择信任前端提供的tag，不判断tagid是否存在
+		err := d.engine.Debug().Raw("select * from blog_tag where id = ?", tagid).Scan(&tag).Error
+		if err != nil {
+			return err
+		}
+		tagList = append(tagList, tag)
+	}
+	for _, tagName := range tagList {
+		fmt.Println(tagName.ID)
+	}
+
 	article := model.Article{
 		Title:   title,
 		Desc:    desc,
 		Content: content,
 		State:   state,
 		Model:   &model.Model{CreateBy: create_by},
+		Tags:    tagList,
 	}
 	return article.Create(d.engine)
 }
