@@ -30,6 +30,7 @@ func (a Article) Get(db *gorm.DB) (*Article, error) {
 }
 
 func (a Article) Create(db *gorm.DB) error {
+	//db.AutoMigrate(&Article{}, &Tag{})
 	//根据文章标题判断是否重复
 	var isExist int
 	db = db.Where("title=? AND is_del=?", a.Title, 0)
