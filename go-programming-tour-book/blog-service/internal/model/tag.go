@@ -6,9 +6,10 @@ import (
 )
 
 type Tag struct {
-	*Model
-	Name  string `json:"name"`
-	State uint8  `json:"state"`
+	Model
+	Name     string    `json:"name"`
+	State    uint8     `json:"state"`
+	Articles []Article `json:"articles" gorm:"many2many:blog_tag_article"`
 }
 
 //建立struct和表名的映射，因为crud的接口都是直接操作结构体的，得让它自己知道对哪张表操作
@@ -67,7 +68,7 @@ func (t Tag) List(db *gorm.DB, pageOffset, pageSize int) ([]*Tag, error) {
 		db = db.Where("name = ?", t.Name)
 	}
 	db = db.Where("state = ?", t.State)
-	if err = db.Where("is_del = ?", 0).Find(&tags).Error; err != nil {
+	if err = db.Preload("Articles").Where("is_del = ?", 0).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 

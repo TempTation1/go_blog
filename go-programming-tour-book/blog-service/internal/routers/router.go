@@ -31,6 +31,7 @@ func NewRouter() *gin.Engine {
 		apiv1.PUT("/tags/:id", tag.Update)         //更新指定标签
 		apiv1.PATCH("/tags/:id/state", tag.Update) //更新指定标签的一个小状态
 		apiv1.GET("/tags", tag.List)               //获取标签列表
+		apiv1.GET("/tags/:id", tag.Get)
 
 		apiv1.POST("/articles", article.Create)            //新增文章
 		apiv1.DELETE("/articles/:id", article.Delete)      //删除指定文章

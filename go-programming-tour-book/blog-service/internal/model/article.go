@@ -10,9 +10,10 @@ type Article struct {
 	*Model
 	Title         string `json:"title"`
 	Desc          string `json:"desc"`
-	Content       string `json:"content"`
+	Content       string `json:"content" gorm:"type:longtext"`
 	CoverImageUrl string `json:"cover_image_url"`
 	State         uint8  `json:"state"`
+	Tags          []Tag  `json:"tags" gorm:"many2many:blog_tag_article"`
 }
 
 func (a Article) TableName() string {
@@ -23,13 +24,14 @@ func (a Article) Get(db *gorm.DB) (*Article, error) {
 	article := &Article{}
 	db = db.Where("is_del=?", 0)
 
-	if err := db.First(article, a.ID).Error; err != nil {
+	if err := db.Preload("Tags").First(article, a.ID).Error; err != nil {
 		return nil, err
 	}
 	return article, nil
 }
 
 func (a Article) Create(db *gorm.DB) error {
+	//db.AutoMigrate(&Article{}, &Tag{})
 	//根据文章标题判断是否重复
 	var isExist int
 	db = db.Where("title=? AND is_del=?", a.Title, 0)
