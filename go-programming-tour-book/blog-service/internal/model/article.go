@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/global"
 	"github.com/Temptation1/go_blog/go-programming-tour-book/blog-service/pkg/errcode"
 	"github.com/jinzhu/gorm"
 )
@@ -40,7 +39,13 @@ func (a Article) Create(db *gorm.DB) error {
 		return err
 	}
 	if isExist == 0 {
-		return db.Create(&a).Error
+		//return db.Create(&a).Error
+		return db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&a).Error; err != nil {
+				return err
+			}
+			return nil
+		})
 	}
 	return errcode.ErrorCreateArticle
 }
@@ -56,7 +61,8 @@ func (a Article) Update(db *gorm.DB, values interface{}) error {
 
 //删除有问题
 func (a Article) Delete(db *gorm.DB) error {
-	global.Logger.Info(a.ID)
-	return db.Where("id=? AND is_del=?", a.ID, 0).Delete(&a).Error
+	//global.Logger.Info(a.ID)
+	return db.Select("Tags").Where("id=? AND is_del=?", a.ID, 0).Delete(&a).Error
 	//return db.Model(a).Delete(&a).Error
+
 }

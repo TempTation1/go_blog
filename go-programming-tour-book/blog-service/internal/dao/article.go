@@ -19,7 +19,11 @@ func (d *Dao) CreateArticle(title string, desc string, content string, create_by
 		tagid := convert.SrcTo(tagName).MustInt()
 		//queryDB := d.engine.Where("is_del=?",0).Session()
 		//d.engine.Where("id=?", tagid).Find(&tag)
-		d.engine.Debug().Raw("select * from blog_tag where id = ?", tagid).Scan(&tag)
+		//这里选择信任前端提供的tag，不判断tagid是否存在
+		err := d.engine.Debug().Raw("select * from blog_tag where id = ?", tagid).Scan(&tag).Error
+		if err != nil {
+			return err
+		}
 		tagList = append(tagList, tag)
 	}
 	for _, tagName := range tagList {
